@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>formapp</title>
+</head>
+<body>
+    <form action="/gender" method="post">
+        <input type="hidden" name="name" value="{{ name }}"/>
+        性別:<br />
+        <input type="radio" id="male" name="gender" value="男性" required/>
+        <label for="male">男性</label><br />
+        <input type="radio" id="female" name="gender" value="女性" />
+        <label for="male">女性</label><br />
+        <input type="submit" value="next" />
+    </form>
+</body>
+</html>
