@@ -16,9 +16,9 @@ class StatelessServerHandler(socket: Socket) extends Handler(socket) {
 
   override def handle(request: Request): Response = request match {
     case Request("GET", p, _, _, _) if (p.takeWhile(_ != '?') == "/") => index()
-    case Request("POST", "/form", _, _, _) => nameForm()
-    case Request("POST", "/name", _, _, Some(body)) => genderForm(body)
-    case Request("POST", "/gender", _, _, Some(body)) => messageForm(body)
+    case Request("POST", "/register-name", _, _, _) => nameForm()
+    case Request("POST", "/register-gender", _, _, Some(body)) => genderForm(body)
+    case Request("POST", "/register-message", _, _, Some(body)) => messageForm(body)
     case Request("POST", "/summary", _, _, Some(body)) => summary(body)
     case _ => NotFound(s"Requested resource '${request.path}' for ${request.method} is not found.")
   }
