@@ -4,7 +4,7 @@ import java.net.Socket
 import java.util.UUID
 import scala.collection.mutable.HashMap
 import scala.io.Source
-import sysdes.formapp.server.{BadRequest, Handler, Interpolator, Server, UrlEncodedDecoder}
+import sysdes.formapp.server.{Handler, Interpolator, Server, UrlEncodedDecoder}
 
 object SessionServer extends Server(8002) {
   override def getHandler(socket: Socket) = new SessionServerHandler(socket)
@@ -17,11 +17,17 @@ object SessionServerHandler {
 class State(var name: String = "", var gender: String = "", var message: String = "")
 
 class SessionServerHandler(socket: Socket) extends Handler(socket) {
-  import sysdes.formapp.server.{NotFound, Ok, Request, Response}
+  import sysdes.formapp.server.{NotFound, Ok, BadRequest, SeeOther,Request, Response}
 
   def handle(request: Request): Response = {
-    if (!request.headers.contains("Cookie")) {
+    if (request.path.takeWhile(_ != '?') == "/") {
       return index()
+    }
+
+    if (!request.headers.contains("Cookie")) {
+      val res = SeeOther()
+      res.addHeader("Location", "/")
+      return res
     }
 
     val sessId = UUID.fromString(request.headers("Cookie").stripPrefix("session-id="))
@@ -30,7 +36,6 @@ class SessionServerHandler(socket: Socket) extends Handler(socket) {
     }
 
     request match {
-      case Request("GET", p, _, _, _) if (p.takeWhile(_ != '?') == "/") => index()
       case Request("POST", "/register-name", _, _, _) => nameForm()
       case Request("POST", "/register-gender", _, _, Some(body)) => genderForm(sessId, body)
       case Request("POST", "/register-message", _, _, Some(body)) => messageForm(sessId, body)
