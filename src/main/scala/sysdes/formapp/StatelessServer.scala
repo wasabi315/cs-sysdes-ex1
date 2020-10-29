@@ -12,14 +12,15 @@ object StatelessServer extends Server(8001) {
 
 class StatelessServerHandler(socket: Socket) extends Handler(socket) {
 
-  import sysdes.formapp.server.{NotFound, Ok, Request, Response}
+  import sysdes.formapp.server.{NotFound, Ok, SeeOther, Request, Response}
 
   override def handle(request: Request): Response = request match {
-    case Request("GET", p, _, _, _) if (p.takeWhile(_ != '?') == "/") => index()
-    case Request("POST", "/register-name", _, _, _) => nameForm()
-    case Request("POST", "/register-gender", _, _, Some(body)) => genderForm(body)
-    case Request("POST", "/register-message", _, _, Some(body)) => messageForm(body)
-    case Request("POST", "/summary", _, _, Some(body)) => summary(body)
+    case Request("GET", "/", _, _, _) => index()
+    case Request("GET", "/register", _, _, _) => startRegistration()
+    case Request("POST", "/register/name", _, _, Some(body)) => registerName(body)
+    case Request("POST", "/register/gender", _, _, Some(body)) => registerGender(body)
+    case Request("POST", "/register/message", _, _, Some(body)) => registerMessage(body)
+    case Request("POST", "/register/confirm", _, _, _) => confirm()
     case _ => NotFound(s"Requested resource '${request.path}' for ${request.method} is not found.")
   }
 
@@ -29,30 +30,36 @@ class StatelessServerHandler(socket: Socket) extends Handler(socket) {
     Ok(html)
   }
 
-  def nameForm(): Response = {
+  def startRegistration(): Response = {
     val src = Source.fromFile("./html/nameForm.html")
     val html = try src.mkString finally src.close()
     Ok(html)
   }
 
-  def genderForm(body: String): Response = {
+  def registerName(body: String): Response = {
     val src = Source.fromFile("./html/genderForm.html")
     val html = try src.mkString finally src.close()
     val bodyMap = UrlEncodedDecoder.decode(body)
     Ok(Interpolator.interpolate(html, bodyMap))
   }
 
-  def messageForm(body: String): Response = {
+  def registerGender(body: String): Response = {
     val src = Source.fromFile("./html/messageForm.html")
     val html = try src.mkString finally src.close()
     val bodyMap = UrlEncodedDecoder.decode(body)
     Ok(Interpolator.interpolate(html, bodyMap))
   }
 
-  def summary(body: String): Response = {
-    val src = Source.fromFile("./html/summary.html")
+  def registerMessage(body: String): Response = {
+    val src = Source.fromFile("./html/confirm.html")
     val html = try src.mkString finally src.close()
     val bodyMap = UrlEncodedDecoder.decode(body)
     Ok(Interpolator.interpolate(html, bodyMap))
+  }
+
+  def confirm(): Response = {
+    val res = SeeOther()
+    res.addHeader("Location", "/")
+    res
   }
 }

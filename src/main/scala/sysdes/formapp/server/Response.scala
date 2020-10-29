@@ -24,6 +24,7 @@ sealed abstract class Response(status: Status, body: String) {
     val responseBody = ss.toString
     responseBody.getBytes(encode).length match {
       case l if l > 0 => addHeader("Content-Length", l.toString)
+      case _ =>
     }
     val buf = new StringBuilder(s"HTTP/1.1 ${status}${cr}")
     for ((k, v) <- headers) {
@@ -36,5 +37,6 @@ sealed abstract class Response(status: Status, body: String) {
 }
 
 final case class Ok(body: String = "")         extends Response(Status.OK, body)
+final case class SeeOther(body: String = "")   extends Response(Status.SeeOther, body)
 final case class NotFound(body: String = "")   extends Response(Status.NotFound, body)
 final case class BadRequest(body: String = "") extends Response(Status.BadRequest, body)
