@@ -7,7 +7,10 @@
 <body>
     <form action="/register/name" method="post">
         <label for="name">名前:</label>
-        <input type="text" id="name" name="name" required/><br />
+        <input type="text" id="name" name="name" value="{{ name }}"/><br />
+        <input type="hidden" name="gender" value="{{ gender }}"/>
+        <input type="hidden" name="message" value="{{ message }}"/>
+        <input type="button" onClick="location.href='/'" value="back" />
         <input type="submit" value="next" />
     </form>
 </body>

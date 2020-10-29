@@ -14,7 +14,7 @@ class StatelessServerHandler(socket: Socket) extends Handler(socket) {
 
   override def handle(request: Request): Response = request match {
     case Request("GET", "/", _, _, _) => index()
-    case Request("GET", "/register", _, _, _) => startRegistration()
+    case Request("POST", "/register", _, _, body) => startRegistration(body.getOrElse(""))
     case Request("POST", "/register/name", _, _, Some(body)) => registerName(body)
     case Request("POST", "/register/gender", _, _, Some(body)) => registerGender(body)
     case Request("POST", "/register/message", _, _, Some(body)) => registerMessage(body)
@@ -28,52 +28,74 @@ class StatelessServerHandler(socket: Socket) extends Handler(socket) {
     Ok(html)
   }
 
-  def startRegistration(): Response = {
+  def startRegistration(body: String): Response = {
+    val bodyMap = UrlEncodedDecoder.decode(body)
+    val name = bodyMap.getOrElse("name", "")
+    val gender = bodyMap.getOrElse("gender", "")
+    val message = bodyMap.getOrElse("message", "")
+
     val src = Source.fromFile("./html/nameForm.html")
     val html = try src.mkString finally src.close()
-    Ok(html)
+    Ok(Interpolator.interpolate(html, Map(
+      "name"    -> name,
+      "gender"  -> gender,
+      "message" -> message
+    )))
   }
 
   def registerName(body: String): Response = {
     val bodyMap = UrlEncodedDecoder.decode(body)
-
-    (for (
+    (for {
       name <- bodyMap.get("name")
-    ) yield {
+    } yield {
+      val gender = bodyMap.getOrElse("gender", "")
+      val maleChecked = if (gender == "male") { "checked" } else { "" }
+      val femaleChecked = if (gender == "female") { "checked "} else { "" }
+      val message = bodyMap.getOrElse("message", "")
+
       val src = Source.fromFile("./html/genderForm.html")
       val html = try src.mkString finally src.close()
-      Ok(Interpolator.interpolate(html, Map("name" -> name)))
+      Ok(Interpolator.interpolate(html, Map(
+        "name"          -> name,
+        "maleChecked"   -> maleChecked,
+        "femaleChecked" -> femaleChecked,
+        "message"       -> message
+      )))
     }).getOrElse(redirectToStart())
   }
 
   def registerGender(body: String): Response = {
     val bodyMap = UrlEncodedDecoder.decode(body)
-
-    (for (
-      name   <- bodyMap.get("name");
+    (for {
+      name   <- bodyMap.get("name")
       gender <- bodyMap.get("gender")
-    ) yield {
+    } yield {
+      val message = bodyMap.getOrElse("message", "")
+
       val src = Source.fromFile("./html/messageForm.html")
       val html = try src.mkString finally src.close()
-      Ok(Interpolator.interpolate(html,
-        Map("name" -> name, "gender" -> gender)
-      ))
+      Ok(Interpolator.interpolate(html, Map(
+        "name"    -> name,
+        "gender"  -> gender,
+        "message" -> message
+      )))
     }).getOrElse(redirectToStart())
   }
 
   def registerMessage(body: String): Response = {
     val bodyMap = UrlEncodedDecoder.decode(body)
-
-    (for (
-      name    <- bodyMap.get("name");
-      gender  <- bodyMap.get("gender");
+    (for {
+      name    <- bodyMap.get("name")
+      gender  <- bodyMap.get("gender")
       message <- bodyMap.get("message")
-    ) yield {
+    } yield {
       val src = Source.fromFile("./html/confirm.html")
       val html = try src.mkString finally src.close()
-      Ok(Interpolator.interpolate(html,
-        Map("name" -> name, "gender" -> gender, "message" -> message)
-      ))
+      Ok(Interpolator.interpolate(html, Map(
+        "name"    -> name,
+        "gender"  -> gender,
+        "message" -> message
+      )))
     }).getOrElse(redirectToStart())
   }
 

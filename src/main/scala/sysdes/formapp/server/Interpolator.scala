@@ -13,6 +13,6 @@ object Interpolator {
   def interpolate(template: String, values: Map[String, String]): String =
     re.replaceAllIn(
       template,
-      m => Sanitizer.sanitize(values(m.group(1)))
+      m => Sanitizer.sanitize(values.getOrElse(m.group(1), m.group(1)))
     )
 }
