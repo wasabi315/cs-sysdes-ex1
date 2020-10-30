@@ -5,9 +5,10 @@
     <title>formapp</title>
 </head>
 <body>
-    <form action="/summary" method="post">
+    <form action="/register/message" method="post">
         <label for="message">メッセージ:</label><br />
-        <textarea id="message" name="message"></textarea><br />
+        <textarea id="message" name="message">{{ message }}</textarea><br />
+        <input type="submit" value="back" formaction="/register/name" formmethod="post" />
         <input type="submit" value="next" />
     </form>
 </body>

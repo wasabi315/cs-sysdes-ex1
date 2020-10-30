@@ -50,7 +50,7 @@ class StatelessServerHandler(socket: Socket) extends Handler(socket) {
   }
 
   def summary(body: String): Response = {
-    val src = Source.fromFile("./html/summary.html")
+    val src = Source.fromFile("./html/confirm.html")
     val html = try src.mkString finally src.close()
     val bodyMap = UrlEncodedDecoder.decode(body)
     Ok(Interpolator.interpolate(html, bodyMap))
