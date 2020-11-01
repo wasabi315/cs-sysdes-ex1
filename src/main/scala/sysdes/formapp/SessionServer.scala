@@ -3,8 +3,6 @@ package sysdes.formapp
 import java.net.Socket
 import java.util.UUID
 
-import sysdes.formapp.SessionServerHandler.createSession
-
 import scala.collection.mutable.HashMap
 import scala.io.Source
 import scala.util.Try
@@ -65,7 +63,7 @@ class SessionServerHandler(socket: Socket) extends Handler(socket) {
 
   def startRegistration(request: Request): Response = {
     val (sessId, state) = SessionServerHandler.getSession(request)
-      .getOrElse(createSession())
+      .getOrElse(SessionServerHandler.createSession())
 
     val src = Source.fromFile("./html/nameForm.html")
     val html = try src.mkString finally src.close()
