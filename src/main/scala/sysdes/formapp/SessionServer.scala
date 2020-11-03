@@ -77,13 +77,12 @@ class SessionServerHandler(socket: Socket) extends Handler(socket) {
   def registerName(request: Request): Response = {
     (for {
       (_, state) <- SessionServerHandler.getSession(request)
-      name <- {
+      _ <- {
         val bodyMap = UrlEncodedDecoder.decode(request.body.getOrElse(""))
-        bodyMap.get("name").orElse(state.name)
+        bodyMap.get("name").foreach(name => state.name = Some(name))
+        state.name
       }
     } yield {
-      state.name = Some(name)
-
       val src = Source.fromFile("./html/genderForm.html")
       val html = try src.mkString finally src.close()
       val maleChecked =
@@ -100,13 +99,12 @@ class SessionServerHandler(socket: Socket) extends Handler(socket) {
   def registerGender(request: Request): Response = {
     (for {
       (_, state) <- SessionServerHandler.getSession(request)
-      gender <- {
+      _ <- {
         val bodyMap = UrlEncodedDecoder.decode(request.body.getOrElse(""))
-        bodyMap.get("gender").orElse(state.gender)
+        bodyMap.get("gender").foreach(gender => state.gender = Some(gender))
+        state.gender
       }
     } yield {
-      state.gender = Some(gender)
-
       val src = Source.fromFile("./html/messageForm.html")
       val html = try src.mkString finally src.close()
       Ok(Interpolator.interpolate(html, Map(
@@ -118,19 +116,20 @@ class SessionServerHandler(socket: Socket) extends Handler(socket) {
   def registerMessage(request: Request): Response = {
     (for {
       (_, state) <- SessionServerHandler.getSession(request)
+      name <- state.name
+      gender <- state.gender
       message <- {
         val bodyMap = UrlEncodedDecoder.decode(request.body.getOrElse(""))
-        bodyMap.get("message").orElse(state.message)
+        bodyMap.get("message").foreach(message => state.message = Some(message))
+        state.message
       }
     } yield {
-      state.message = Some(message)
-
       val src = Source.fromFile("./html/confirm.html")
       val html = try src.mkString finally src.close()
       Ok(Interpolator.interpolate(html, Map(
-        "name" -> state.name.get,
-        "gender" -> state.gender.get,
-        "message" -> state.message.get
+        "name" -> name,
+        "gender" -> gender,
+        "message" -> message
       )))
     }).getOrElse(redirectToStart())
   }
