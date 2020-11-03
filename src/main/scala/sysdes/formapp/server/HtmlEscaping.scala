@@ -1,7 +1,7 @@
 package sysdes.formapp.server
 
-object Sanitizer {
-  def sanitize(input: String): String =
+object HtmlEscaping {
+  def escape(input: String): String =
     input
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
