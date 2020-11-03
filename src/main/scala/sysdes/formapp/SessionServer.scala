@@ -86,9 +86,9 @@ class SessionServerHandler(socket: Socket) extends Handler(socket) {
       val src = Source.fromFile("./html/genderForm.html")
       val html = try src.mkString finally src.close()
       val maleChecked =
-        if (state.gender.getOrElse("") == "male") { "checked" } else { "" }
+        if (state.gender.contains("male")) { "checked" } else { "" }
       val femaleChecked =
-        if (state.gender.getOrElse("") == "female") { "checked" } else { "" }
+        if (state.gender.contains("female")) { "checked" } else { "" }
       Ok(Interpolator.interpolate(html, Map(
         "maleChecked"   -> maleChecked,
         "femaleChecked" -> femaleChecked
